@@ -1,0 +1,69 @@
+# Copy this file to terraform.tfvars and replace every CHANGE_ME value.
+# OS_* authentication values stay in mars-nguyennd.sh and must never be copied here.
+
+cluster_name = "nextcloud-k8s"
+
+# Pin the Glance image ID in production. To resolve by exact name instead, set
+# image_id = null and image_name = "Ubuntu 24.04".
+image_id                  = "CHANGE_ME-image-uuid"
+image_name                = null
+control_plane_flavor_name = "CHANGE_ME-8-vCPU-32GiB"
+worker_flavor_name        = "CHANGE_ME-32-vCPU-128GiB"
+keypair_name              = "CHANGE_ME-keypair"
+
+# The RC file already exports OS_REGION_NAME. Keep null to use it.
+region = null
+
+availability_zones = ["nova"]
+
+control_plane_count = 3
+worker_count        = 3
+
+boot_from_volume              = true
+control_plane_root_volume_size = 100
+worker_root_volume_size        = 200
+
+create_network        = true
+network_name          = "nextcloud-k8s-network"
+subnet_name           = "nextcloud-k8s-subnet"
+router_name           = "nextcloud-k8s-router"
+node_subnet_cidr      = "10.20.0.0/24"
+external_network_name = "CHANGE_ME-public-network"
+
+# Use these only when create_network = false.
+existing_network_name = null
+existing_subnet_name  = null
+
+# Requires the OpenStack Octavia service. Disable it only if a separate
+# HAProxy/keepalived API endpoint will be provided during Kubernetes bootstrap.
+create_api_load_balancer = true
+create_api_floating_ip   = false
+
+# For a public API, set create_api_floating_ip = true and allow only the
+# administrator/VPN public CIDRs. The node subnet is included automatically.
+api_allowed_cidrs = []
+
+# Prefer VPN/private access. To temporarily expose SSH on control-plane 01,
+# enable this and replace the example with the administrator public /32.
+create_bootstrap_floating_ip = false
+ssh_allowed_cidrs             = []
+# ssh_allowed_cidrs           = ["203.0.113.10/32"]
+
+control_plane_server_group_policy = "anti-affinity"
+worker_server_group_policy        = "soft-anti-affinity"
+worker_server_group_size          = 10
+
+# Optional Octavia settings. Query `openstack loadbalancer flavor list` and
+# select a verified HA topology for production. Null uses cloud defaults.
+api_load_balancer_flavor_id         = null
+api_load_balancer_availability_zone = null
+api_load_balancer_provider          = null
+api_listener_idle_timeout_ms        = 3600000
+api_listener_connect_timeout_ms     = 5000
+
+# Prefer a stable internal/public DNS record resolving to the chosen API VIP.
+api_dns_name = null
+
+prepare_kubernetes_os = true
+ssh_user              = "ubuntu"
+timezone              = "Asia/Bangkok"
